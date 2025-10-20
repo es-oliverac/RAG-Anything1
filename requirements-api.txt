@@ -1,0 +1,12 @@
+# API Server Dependencies
+# FastAPI and server components
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# RAG-Anything core dependencies
+-r requirements.txt
+
+# Additional dependencies for API server
+python-dotenv>=1.0.0
+aiofiles>=23.2.1

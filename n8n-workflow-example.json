@@ -1,0 +1,200 @@
+{
+  "name": "RAG-Anything - Document Chat Agent",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "When chat message received",
+      "type": "n8n-nodes-base.chatTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "Eres un asistente útil que puede buscar información en documentos procesados. Cuando el usuario pregunte algo, usa la herramienta 'search_documents' para encontrar la respuesta.\n\nSi el usuario menciona un archivo específico (por ejemplo 'reporte.pdf'), usa el parámetro file_name para buscar solo en ese documento.\n\nSi no menciona archivo, busca en todos los documentos disponibles.",
+        "options": {}
+      },
+      "id": "2",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.RAG_API_URL }}/query",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.query }}"
+            },
+            {
+              "name": "file_name",
+              "value": "={{ $json.file_name }}"
+            },
+            {
+              "name": "mode",
+              "value": "hybrid"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3",
+      "name": "Search Documents Tool",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [690, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1",
+          "name": "RAG API Key"
+        }
+      },
+      "notes": "Busca información en los documentos procesados por RAG-Anything"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.RAG_API_URL }}/upload",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "inputDataFieldName": "data",
+              "value": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4",
+      "name": "Upload Document Tool",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [690, 400],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1",
+          "name": "RAG API Key"
+        }
+      },
+      "notes": "Sube y procesa documentos nuevos"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {}
+      },
+      "id": "5",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [690, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "2",
+          "name": "OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "6",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.2,
+      "position": [690, 500]
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "OpenAI Chat Model",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ],
+      "ai_tool": [
+        [
+          {
+            "node": "Search Documents Tool",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Upload Document Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ],
+      "ai_memory": [
+        [
+          {
+            "node": "Window Buffer Memory",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-01-15T10:00:00.000Z",
+      "updatedAt": "2025-01-15T10:00:00.000Z",
+      "id": "1",
+      "name": "RAG"
+    },
+    {
+      "createdAt": "2025-01-15T10:00:00.000Z",
+      "updatedAt": "2025-01-15T10:00:00.000Z",
+      "id": "2",
+      "name": "Document Processing"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-15T10:00:00.000Z",
+  "versionId": "1"
+}

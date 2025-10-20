@@ -1,0 +1,87 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README_DOCKER.md
+docs/
+assets/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# RAG data (will be in volumes)
+rag_storage/
+output/
+uploads/
+tiktoken_cache/
+*.log
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# CI/CD
+.github/
+.pre-commit-config.yaml
+
+# Examples and tests (optional, uncomment to exclude)
+# examples/
+# tests/
+
+# Environment files (will be passed as env vars)
+.env
+.env.*
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+temp/
+tmp/

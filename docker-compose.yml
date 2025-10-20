@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  raganything-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: raganything-api
+    restart: unless-stopped
+
+    ports:
+      - "${PORT:-8000}:8000"
+
+    environment:
+      # API Configuration
+      - API_KEY=${API_KEY:-your-secret-api-key}
+      - HOST=0.0.0.0
+      - PORT=8000
+
+      # OpenAI Configuration
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
+      - VISION_MODEL=${VISION_MODEL:-gpt-4o}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-3-large}
+      - EMBEDDING_DIM=${EMBEDDING_DIM:-3072}
+
+      # RAG Configuration
+      - WORKING_DIR=/app/rag_storage
+      - OUTPUT_DIR=/app/output
+      - UPLOAD_DIR=/app/uploads
+      - PARSER=mineru
+      - PARSE_METHOD=auto
+
+      # Multimodal Processing
+      - ENABLE_IMAGE_PROCESSING=true
+      - ENABLE_TABLE_PROCESSING=true
+      - ENABLE_EQUATION_PROCESSING=true
+
+      # Context Configuration
+      - CONTEXT_WINDOW=${CONTEXT_WINDOW:-1}
+      - CONTEXT_MODE=${CONTEXT_MODE:-page}
+      - MAX_CONTEXT_TOKENS=${MAX_CONTEXT_TOKENS:-2000}
+
+      # LightRAG - LLM Configuration
+      - ENABLE_LLM_CACHE=${ENABLE_LLM_CACHE:-true}
+      - ENABLE_LLM_CACHE_FOR_EXTRACT=${ENABLE_LLM_CACHE_FOR_EXTRACT:-true}
+      - TIMEOUT=${TIMEOUT:-240}
+      - TEMPERATURE=${TEMPERATURE:-0}
+      - MAX_ASYNC=${MAX_ASYNC:-4}
+      - MAX_TOKENS=${MAX_TOKENS:-32768}
+
+      # LightRAG - RAG Query Settings
+      - HISTORY_TURNS=${HISTORY_TURNS:-3}
+      - COSINE_THRESHOLD=${COSINE_THRESHOLD:-0.2}
+      - TOP_K=${TOP_K:-60}
+      - MAX_TOKEN_TEXT_CHUNK=${MAX_TOKEN_TEXT_CHUNK:-4000}
+      - MAX_TOKEN_RELATION_DESC=${MAX_TOKEN_RELATION_DESC:-4000}
+      - MAX_TOKEN_ENTITY_DESC=${MAX_TOKEN_ENTITY_DESC:-4000}
+
+      # LightRAG - Entity and Relation Configuration
+      - SUMMARY_LANGUAGE=${SUMMARY_LANGUAGE:-English}
+      - FORCE_LLM_SUMMARY_ON_MERGE=${FORCE_LLM_SUMMARY_ON_MERGE:-6}
+      - MAX_TOKEN_SUMMARY=${MAX_TOKEN_SUMMARY:-500}
+
+      # LightRAG - Document Processing
+      - MAX_PARALLEL_INSERT=${MAX_PARALLEL_INSERT:-2}
+      - CHUNK_SIZE=${CHUNK_SIZE:-1200}
+      - CHUNK_OVERLAP_SIZE=${CHUNK_OVERLAP_SIZE:-100}
+
+      # LightRAG - Embedding Configuration
+      - EMBEDDING_BATCH_NUM=${EMBEDDING_BATCH_NUM:-32}
+      - EMBEDDING_FUNC_MAX_ASYNC=${EMBEDDING_FUNC_MAX_ASYNC:-16}
+
+      # LightRAG - Graph Configuration
+      - MAX_GRAPH_NODES=${MAX_GRAPH_NODES:-1000}
+
+      # Tiktoken cache for offline mode
+      - TIKTOKEN_CACHE_DIR=/app/tiktoken_cache
+
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - VERBOSE=${VERBOSE:-false}
+      - LOG_MAX_BYTES=${LOG_MAX_BYTES:-10485760}
+      - LOG_BACKUP_COUNT=${LOG_BACKUP_COUNT:-5}
+
+    volumes:
+      # Persistent storage for RAG data
+      - raganything-storage:/app/rag_storage
+      # Parsed documents output
+      - raganything-output:/app/output
+      # Uploaded files
+      - raganything-uploads:/app/uploads
+      # Tiktoken cache
+      - raganything-tiktoken:/app/tiktoken_cache
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # Resource limits (adjust based on your needs)
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+volumes:
+  raganything-storage:
+    driver: local
+  raganything-output:
+    driver: local
+  raganything-uploads:
+    driver: local
+  raganything-tiktoken:
+    driver: local
