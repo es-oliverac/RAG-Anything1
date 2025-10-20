@@ -2,7 +2,7 @@
 # Optimized for CPU-only deployment with MinerU parser
 
 # Stage 1: Builder
-FROM python:3.10-slim as builder
+FROM python:3.10-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -43,8 +43,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # System utilities
     curl \
     ca-certificates \
-    # Image processing libraries
-    libgl1-mesa-glx \
+    # Image processing libraries (updated for Debian Trixie)
+    libgl1 \
     libglib2.0-0 \
     # Cleanup
     && rm -rf /var/lib/apt/lists/* \
